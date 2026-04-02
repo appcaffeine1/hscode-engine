@@ -1,0 +1,6 @@
+baseURL = "https://your-domain.com/"
+languageCode = "ko-kr"
+title = "글로벌 관세 자동 계산기"
+
+# 🚀 잉여 렌더링 파이프라인 폐쇄 (단일 페이지와 사이트맵만 생성)
+disableKinds = ["section", "taxonomy", "term", "RSS"]
