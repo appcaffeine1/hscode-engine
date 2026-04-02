@@ -21,12 +21,13 @@ type Task struct {
 
 // 워커 수 제한 (ulimit 방어)
 const numWorkers = 100
-const totalTasks = 100000
+// 🚀 Cloudflare 무료 한계선(20,000개) 우회: 19,000개로 타설량 하향 고정
+const totalTasks = 19000
 const outputDir = "content/calculator"
 
 func main() {
 	start := time.Now()
-	fmt.Println("🚀 시스템적 천재 아키텍트 타설 엔진 가동 시작...")
+	fmt.Println("🚀 System Architect Engine Starting...")
 
 	// 1. 디렉토리 사전 타설 (Race Condition 방어)
 	preAllocateDirectories()
@@ -41,7 +42,7 @@ func main() {
 		go worker(w, jobs, &wg)
 	}
 
-	// 3. 10만 개 작업 큐잉 (메모리에서 채널로 즉시 주입)
+	// 3. 19,000 개 작업 큐잉 (메모리에서 채널로 즉시 주입)
 	for i := 1; i <= totalTasks; i++ {
 		jobs <- Task{
 			ID:         i,
@@ -55,7 +56,7 @@ func main() {
 	// 4. 모든 I/O 작업 완료 대기
 	wg.Wait()
 
-	fmt.Printf("✅ 타설 완료: %d개 파일 생성 (소요시간: %v)\n", totalTasks, time.Since(start))
+	fmt.Printf("✅ Generation Complete: %d files created (Time: %v)\n", totalTasks, time.Since(start))
 }
 
 // 워커 스레드: 채널에서 작업을 꺼내어 디스크에 기록
@@ -68,17 +69,18 @@ func worker(id int, jobs <-chan Task, wg *sync.WaitGroup) {
 		fileName := fmt.Sprintf("%s.md", j.Keyword)
 		fullPath := filepath.Join(outputDir, folder, fileName)
 
-		// 최소화된 Frontmatter 강제 주입 (단일 파일 크기 극소화)
+		// 최소화된 Frontmatter 강제 주입 및 100% 영문 SEO 적용
 		content := fmt.Sprintf(`---
-title: "%s"
+title: "Import Duty & Tax Calculator for %s"
+description: "Instantly calculate customs duty, taxes, and HS code constraints for %s."
 tariff_rate: %.1f
 vat_rate: %.1f
----`, j.Keyword, j.TariffRate, j.VatRate)
+---`, j.Keyword, j.Keyword, j.TariffRate, j.VatRate)
 
 		// 디스크 I/O 타격
 		err := os.WriteFile(fullPath, []byte(content), 0644)
 		if err != nil {
-			log.Printf("워커 %d - 파일 쓰기 에러: %v\n", id, err)
+			log.Printf("Worker %d - Write Error: %v\n", id, err)
 		}
 	}
 }
